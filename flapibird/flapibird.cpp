@@ -4,67 +4,92 @@
 #include<thread>
 #include<chrono>
 using namespace std;
-int columnX = 10;
-int columnY = 3;
+int score = 0;
+int columnX = 15;
+int columnY = 0;
 bool gameOver = 0;
 int birdY = 10;
 void input() {
 	if (_kbhit()) {
 		if (_getch() == ' ')
 		{
-			birdY--;
+			for (int i = 0; i < 2; ++i) {
+				birdY--;
+				this_thread::sleep_for(chrono::milliseconds(50));
+			}
 		}
 	}
 }
-void birdLogic() {
+void moveLogic() {
 	while (!gameOver) {
-		this_thread::sleep_for(chrono::milliseconds(600));
+		this_thread::sleep_for(chrono::milliseconds(300));
 		birdY++;
+		columnX--;
 		this_thread::sleep_for(chrono::milliseconds(200));
 		birdY++;
+		columnX--;
 	}
+	
 }
 void logic() {
-	
+	if (birdY >= 19 || birdY < 0) {
+		cout << "DENIS LOX";
+		gameOver = true;
+	}
 
-	if (birdY >= 20 || birdY <= 0) {
+	if (columnX == 1 && columnY != birdY && columnY+1 != birdY && columnY-1 != birdY && columnY + 2 != birdY && columnY - 2 != birdY )
+	{
+		cout << "DENIS LOX";
 		gameOver = true;
 	}
 	
 }
 void draw() {
 	system("cls");
-	for (int y = 0; y < 20; y++)
-	{
-		if (y == birdY)
-		{
+	for (int y = 0; y < 20; y++) {
+		if (y == birdY) {
 			cout << "O";
-		}
-		for (int x = 0; x < 20; x++)
-		{
-			if (x == columnX)
-			{
-				cout << '#';
+			for (int x = 1; x < 20; x++) {
+				if (x == columnX && y != columnY && y != columnY - 1 && y != columnY + 1 && y != columnY - 2 && y != columnY + 2) {
+					cout << '#';
+				}
+				else {
+					cout << ' ';
+				}
 			}
-			else {
-				if (y != birdY) {
+		}
+		else {
+			for (int x = 0; x < 20; x++) {
+				if (x == columnX && y != columnY && y != columnY - 1 && y != columnY + 1 && y != columnY - 2 && y != columnY + 2) {
+					cout << '#';
+				}
+				else {
 					cout << ' ';
 				}
 			}
 		}
 		cout << endl;
 	}
-	
-	cout << "###################################################################################################################################################" << endl;
+
+	cout << "################################################################" << endl;
+	cout << endl << score << endl;
 }
 int main()
 {
-	thread decreaseThread(birdLogic); // Запускаем поток birdLogic
+	thread inputThread(input);
+	thread decreaseThread(moveLogic); 
 	while (!gameOver) {
-		draw();
 		input();
+		draw();
 		logic();
+		if (columnX < 0) {
+			srand(time(NULL));
+			columnY = rand() % 20;
+			columnX = 15;
+			score++;
+		}
 	}
-	decreaseThread.join(); // Дождемся завершения потока перед завершением программы
+	decreaseThread.join(); 
+	inputThread.join();
 	return 0;
 }
